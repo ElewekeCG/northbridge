@@ -1,0 +1,40 @@
+# .github/workflows/ci.yml
+# Northbridge Commerce — YOUR TASK: Write the CI pipeline.
+#
+# This workflow runs on every push to any branch and on pull requests to main.
+# It must NOT push to ECR or deploy — that is deploy.yml (main branch only).
+#
+# JOBS REQUIRED:
+#
+#   1. test-python-services
+#      - Matrix: auth-service, orders-service, inventory-service, analytics-service
+#      - Python 3.11
+#      - pip install -r requirements.txt
+#
+#   2. test-node-services
+#      - Matrix: catalog-service, payments-service, notifications-service
+#      - Node 20
+#      - npm ci
+#
+#   3. build-images (runs after both test jobs pass)
+#      - Matrix: all 8 services including frontend
+#      - docker build -t northbridge-<service>:ci-test ./<service>
+#      - This confirms every Dockerfile builds successfully without pushing
+#
+#   4. validate-compose
+#      - cp .env.example .env
+#      - docker compose config --quiet
+#      - Confirms the docker-compose.yml you wrote is syntactically valid
+#
+# REFERENCE: Solution guide Section 8.
+
+name: CI — Build and Test
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  # TODO: define your CI jobs here

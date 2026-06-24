@@ -1,0 +1,39 @@
+# monitoring/alertmanager/alertmanager.yml
+# Northbridge Commerce — YOUR TASK: Write the Alertmanager routing configuration.
+#
+# You need to configure:
+#
+#   global:
+#     resolve_timeout: 5m
+#
+#   route:
+#     - Default receiver: slack-notifications
+#     - group_by: [alertname, severity]
+#     - group_wait: 30s
+#     - group_interval: 5m
+#     - repeat_interval: 4h
+#     - A sub-route for severity: critical that sends to slack-critical
+#       with repeat_interval: 1h
+#
+#   receivers:
+#     - slack-notifications: posts to #northbridge-alerts
+#     - slack-critical: posts to #northbridge-critical with a 🚨 prefix
+#
+# IMPORTANT — SLACK WEBHOOK SUBSTITUTION:
+#   Alertmanager does NOT automatically expand environment variables
+#   in this file. You cannot just write ${SLACK_WEBHOOK_URL} and expect
+#   it to work. You must substitute the value before the container starts.
+#   Run: envsubst < alertmanager.yml > alertmanager-rendered.yml
+#   and mount the rendered file, OR substitute it in your deploy script.
+#   See the solution guide Section 6.4 for the exact pattern.
+#
+# Your Slack config should include:
+#   api_url: <your-webhook-url>
+#   channel: #northbridge-alerts (or #northbridge-critical)
+#   title: from CommonAnnotations.summary
+#   text: from CommonAnnotations.description
+#   send_resolved: true
+#
+# REFERENCE: Solution guide Section 6.4.
+
+# TODO: write the Alertmanager configuration here

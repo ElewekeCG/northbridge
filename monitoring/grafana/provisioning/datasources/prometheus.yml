@@ -1,0 +1,21 @@
+# monitoring/grafana/provisioning/datasources/prometheus.yml
+# Northbridge Commerce — YOUR TASK: Write the Grafana datasource provisioning file.
+#
+# This file tells Grafana to automatically connect to Prometheus on startup
+# so you do not have to manually add a datasource through the UI.
+#
+# You need:
+#   apiVersion: 1
+#   datasources:
+#     - name: Prometheus
+#       type: prometheus
+#       access: proxy
+#       url: http://prometheus:9090   (container name, not localhost)
+#       isDefault: true
+#       editable: false
+#
+# NOTE: "access: proxy" means Grafana's backend queries Prometheus —
+# not the browser. This is correct for a Docker network setup where
+# Prometheus is not exposed on a public port.
+
+# TODO: write the datasource provisioning configuration here

@@ -1,0 +1,54 @@
+# .github/workflows/deploy.yml
+# Northbridge Commerce — YOUR TASK: Write the CD pipeline.
+#
+# This workflow runs ONLY on push to main.
+# It builds all 8 images, pushes to ECR, then SSHes into EC2 to deploy.
+#
+# REQUIRED GITHUB SECRETS (set these in your repo Settings → Secrets → Actions):
+#   AWS_ACCESS_KEY_ID
+#   AWS_SECRET_ACCESS_KEY
+#   AWS_REGION
+#   ECR_REGISTRY          (e.g. 123456789012.dkr.ecr.eu-west-2.amazonaws.com)
+#   EC2_HOST
+#   EC2_USER              (ubuntu)
+#   EC2_SSH_KEY           (full contents of the .pem private key file)
+#   POSTGRES_PASSWORD
+#   REDIS_PASSWORD
+#   JWT_SECRET
+#   TRAEFIK_DASHBOARD_AUTH
+#   GRAFANA_ADMIN_PASSWORD
+#   SLACK_WEBHOOK_URL
+#   BACKUP_S3_BUCKET
+#
+# JOB 1 — build-and-push:
+#   - Matrix over all 8 services
+#   - Configure AWS credentials using the secrets above
+#   - Log in to ECR
+#   - docker build with TWO tags: the git SHA and :latest
+#   - docker push both tags
+#
+# JOB 2 — deploy (runs after build-and-push):
+#   - SSH into EC2 using appleboy/ssh-action
+#   - Write ALL secrets to .env on the EC2 instance from the workflow's
+#     environment variables — never hardcode values, never commit .env
+#   - chmod 600 .env
+#   - ECR login on the EC2 instance
+#   - docker compose pull
+#   - docker compose up -d --remove-orphans
+#   - Health check sweep — curl each service's /healthz endpoint
+#
+# SECURITY REQUIREMENT:
+#   The .env file must be written on the EC2 instance from GitHub Secrets,
+#   NOT checked into the repository. This directly addresses the Northbridge
+#   incident where a .env file was committed to source control.
+#
+# REFERENCE: Solution guide Section 8.
+
+name: CD — Build, Push to ECR, Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # TODO: define your CD jobs here

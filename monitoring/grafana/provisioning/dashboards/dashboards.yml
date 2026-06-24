@@ -1,0 +1,24 @@
+# monitoring/grafana/provisioning/dashboards/dashboards.yml
+# Northbridge Commerce — YOUR TASK: Write the Grafana dashboard provisioning file.
+#
+# This file tells Grafana where to find dashboard JSON files on disk
+# so they are loaded automatically on startup.
+#
+# You need:
+#   apiVersion: 1
+#   providers:
+#     - name: "Northbridge Dashboards"
+#       orgId: 1
+#       folder: ""
+#       type: file
+#       disableDeletion: false
+#       updateIntervalSeconds: 30
+#       allowUiUpdates: true
+#       options:
+#         path: /var/lib/grafana/dashboards
+#
+# The northbridge-overview.json dashboard file is already provided in
+# monitoring/grafana/dashboards/ — this provisioning file is what tells
+# Grafana to load it automatically.
+
+# TODO: write the dashboard provisioning configuration here

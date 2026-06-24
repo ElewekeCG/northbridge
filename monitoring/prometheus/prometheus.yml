@@ -1,0 +1,38 @@
+# monitoring/prometheus/prometheus.yml
+# Northbridge Commerce — YOUR TASK: Write the Prometheus scrape configuration.
+#
+# You need to configure:
+#
+#   global:
+#     scrape_interval: 15s
+#     evaluation_interval: 15s
+#
+#   rule_files:
+#     - "alert_rules.yml"
+#
+#   alerting:
+#     alertmanagers pointing to alertmanager:9093
+#
+#   scrape_configs — one job per target:
+#     - prometheus        (localhost:9090)
+#     - node-exporter     (node-exporter:9100)
+#     - cadvisor          (cadvisor:8080)
+#     - postgres-exporter (postgres-exporter:9187)
+#     - redis-exporter    (redis-exporter:9121)
+#     - traefik           (traefik:8080)
+#
+#     Application services — each exposes /metrics:
+#     - auth-service          (auth-service:8000)
+#     - catalog-service       (catalog-service:4000)
+#     - orders-service        (orders-service:8001)
+#     - payments-service      (payments-service:4001)
+#     - inventory-service     (inventory-service:8002)
+#     - notifications-service (notifications-service:4002)
+#     - analytics-service     (analytics-service:8003)
+#
+# NOTE: All targets use container names on the northbridge-net network —
+# Prometheus runs inside Docker and reaches them by service name, not localhost.
+#
+# REFERENCE: Solution guide Section 6.
+
+# TODO: write the Prometheus scrape configuration here

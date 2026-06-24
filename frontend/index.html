@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Northbridge Commerce</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0f1117; color: #e8e8e8; }
+    header { background: #161925; padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2e3d; }
+    header h1 { font-size: 22px; font-weight: 700; background: linear-gradient(90deg,#5b8cff,#9b6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    nav button { background: #5b8cff; border: none; color: #fff; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-left: 8px; }
+    main { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+    .status-bar { background: #161925; border: 1px solid #2a2e3d; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; font-size: 13px; display: flex; gap: 20px; flex-wrap: wrap; }
+    .status-ok { color: #4ade80; font-weight: 600; }
+    .status-bad { color: #f87171; font-weight: 600; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+    .card { background: #161925; border: 1px solid #2a2e3d; border-radius: 10px; padding: 18px; }
+    .card h3 { font-size: 15px; margin-bottom: 6px; }
+    .card .price { color: #5b8cff; font-weight: 700; font-size: 18px; margin: 8px 0; }
+    .card .stock { font-size: 12px; color: #888; }
+    .card button { width: 100%; margin-top: 10px; background: #2a2e3d; color: #fff; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
+    #auth-panel, #orders-panel, #analytics-panel { background: #161925; border: 1px solid #2a2e3d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+    input { padding: 8px 10px; border: 1px solid #2a2e3d; background: #0f1117; color: #fff; border-radius: 6px; margin-right: 8px; font-size: 14px; }
+    .msg { margin-top: 10px; font-size: 13px; }
+    .metric { display: inline-block; margin-right: 30px; }
+    .metric .num { font-size: 24px; font-weight: 700; color: #5b8cff; }
+    .metric .label { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Northbridge Commerce</h1>
+    <nav>
+      <button onclick="document.getElementById('auth-panel').scrollIntoView()">Account</button>
+      <button onclick="loadOrders()">My Orders</button>
+      <button onclick="loadAnalytics()">Dashboard</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="status-bar" id="status-bar">Checking system status...</div>
+
+    <div id="analytics-panel">
+      <h3 style="margin-bottom:14px;">Operations Dashboard</h3>
+      <div id="analytics-content">Loading...</div>
+    </div>
+
+    <div id="auth-panel">
+      <h3>Sign Up / Log In</h3>
+      <input id="email" type="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+      <input id="full_name" type="text" placeholder="Full Name (signup only)" />
+      <button onclick="signup()">Sign Up</button>
+      <button onclick="login()">Log In</button>
+      <div class="msg" id="auth-msg"></div>
+    </div>
+
+    <h2 style="margin-bottom:16px;">Catalog</h2>
+    <div class="grid" id="product-grid">Loading products...</div>
+
+    <div id="orders-panel" style="margin-top: 30px;">
+      <h3>My Orders</h3>
+      <div id="orders-list">Log in and click "My Orders"</div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = '';
+    let token = localStorage.getItem('northbridge_token') || '';
+
+    async function checkHealth() {
+      const services = ['auth', 'catalog', 'orders', 'payments', 'inventory', 'notifications', 'analytics'];
+      const results = await Promise.all(services.map(async (s) => {
+        try {
+          const res = await fetch(`${API_BASE}/api/${s}/healthz`);
+          return { service: s, ok: res.ok };
+        } catch {
+          return { service: s, ok: false };
+        }
+      }));
+      document.getElementById('status-bar').innerHTML = results.map(r =>
+        `<span>${r.service}: <span class="${r.ok ? 'status-ok' : 'status-bad'}">${r.ok ? 'UP' : 'DOWN'}</span></span>`
+      ).join('');
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_BASE}/api/catalog/products`);
+        const data = await res.json();
+        document.getElementById('product-grid').innerHTML = data.products.map(p => `
+          <div class="card">
+            <h3>${p.name}</h3>
+            <div class="stock">${p.category} • ${p.stock} in stock</div>
+            <div class="price">£${parseFloat(p.price).toFixed(2)}</div>
+            <button onclick="placeOrder(${p.id})">Order Now</button>
+          </div>
+        `).join('');
+      } catch {
+        document.getElementById('product-grid').innerText = 'Failed to load catalog.';
+      }
+    }
+
+    async function loadAnalytics() {
+      try {
+        const res = await fetch(`${API_BASE}/api/analytics/summary`);
+        const data = await res.json();
+        document.getElementById('analytics-content').innerHTML = `
+          <div class="metric"><div class="num">${data.total_orders}</div><div class="label">Total Orders</div></div>
+          <div class="metric"><div class="num">£${data.total_revenue.toFixed(2)}</div><div class="label">Total Revenue</div></div>
+          <div class="metric"><div class="num">£${data.avg_order_value.toFixed(2)}</div><div class="label">Avg Order Value</div></div>
+        `;
+      } catch {
+        document.getElementById('analytics-content').innerText = 'Failed to load analytics.';
+      }
+    }
+
+    async function signup() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const full_name = document.getElementById('full_name').value;
+      const res = await fetch(`${API_BASE}/api/auth/signup`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, full_name }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        token = data.access_token;
+        localStorage.setItem('northbridge_token', token);
+        document.getElementById('auth-msg').innerText = 'Signed up and logged in.';
+      } else {
+        document.getElementById('auth-msg').innerText = data.detail || 'Signup failed';
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        token = data.access_token;
+        localStorage.setItem('northbridge_token', token);
+        document.getElementById('auth-msg').innerText = 'Logged in.';
+      } else {
+        document.getElementById('auth-msg').innerText = data.detail || 'Login failed';
+      }
+    }
+
+    async function placeOrder(productId) {
+      if (!token) { alert('Please log in first.'); return; }
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ product_id: productId, quantity: 1, card_last4: '4242' }),
+      });
+      const data = await res.json();
+      alert(res.ok ? `Order #${data.id} placed!` : (data.detail || 'Order failed'));
+      loadProducts();
+      loadAnalytics();
+    }
+
+    async function loadOrders() {
+      if (!token) { document.getElementById('orders-list').innerText = 'Please log in first.'; return; }
+      const res = await fetch(`${API_BASE}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      document.getElementById('orders-list').innerHTML = res.ok
+        ? data.map(o => `<div>Order #${o.id} — Product ${o.product_id} × ${o.quantity} — £${o.total_price.toFixed(2)} — ${o.status}</div>`).join('')
+        : 'Failed to load orders';
+    }
+
+    checkHealth();
+    loadProducts();
+    loadAnalytics();
+    setInterval(checkHealth, 15000);
+    setInterval(loadAnalytics, 20000);
+  </script>
+</body>
+</html>

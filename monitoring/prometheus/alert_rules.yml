@@ -1,0 +1,46 @@
+# monitoring/prometheus/alert_rules.yml
+# Northbridge Commerce — YOUR TASK: Write the Prometheus alert rules.
+#
+# You must write alert rules covering FIVE categories.
+# Each category must have at least one working, tested rule:
+#
+#   1. HOST RESOURCES
+#      - HighCPUUsage       — node_cpu_seconds_total, threshold >85%, for 5m
+#      - HighMemoryUsage    — node_memory_MemAvailable_bytes, threshold >85%, for 5m
+#      - LowDiskSpace       — node_filesystem_avail_bytes, threshold <15%, for 10m
+#
+#   2. CONTAINER HEALTH
+#      - ContainerDown      — up == 0, for 1m
+#      - ContainerHighMemory — container_memory_usage_bytes vs limit, threshold >90%, for 5m
+#
+#   3. DATABASE
+#      - PostgreSQLDown           — pg_up == 0, for 1m
+#      - PostgreSQLHighConnections — pg_stat_activity_count / pg_settings_max_connections, >80%, for 5m
+#
+#   4. REDIS
+#      - RedisDown         — redis_up == 0, for 1m
+#      - RedisHighMemory   — redis_memory_used_bytes / redis_memory_max_bytes, >90%, for 5m
+#      - RedisLowCacheHitRate — catalog_cache_hits_total vs misses, <50% for 15m
+#
+#   5. APPLICATION
+#      - HighErrorRate     — http_request_duration_seconds_count with status 5xx, >5%, for 3m
+#      - HighRequestLatency — histogram_quantile(0.95, ...) > 1s, for 5m
+#      - PaymentsHighDeclineRate — payments_processed_total by status, >20%, for 10m
+#
+# EACH RULE MUST HAVE:
+#   - alert name
+#   - expr (valid PromQL)
+#   - for duration
+#   - labels (severity: warning or critical)
+#   - annotations (summary and description with $value templating)
+#
+# TEST YOUR RULES: After deploying, check Prometheus UI → Status → Rules
+# to confirm all rules load without errors.
+#
+# TRIGGER TEST: You must deliberately fire at least 3 rules and confirm
+# they reach Alertmanager and produce a Slack notification (Deliverable D8).
+#
+# REFERENCE: Solution guide Section 6.2.
+
+groups:
+  # TODO: write your alert rule groups here
