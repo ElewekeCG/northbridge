@@ -1,0 +1,267 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=northbridge
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=northbridge_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U northbridge -d northbridge_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 160M
+
+  # app services
+  auth-service:
+    build:
+      context: ./auth-service
+    expose:
+      - 8000
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${AUTH_SECRET_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+  catalog-service:
+    build:
+      context: ./catalog-service
+    expose:
+      - "4000"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/healthz"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+ 
+  inventory-service:
+    build:
+      context: ./inventory-service
+    expose:
+      - "8002"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+      - REDIS_URL=redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/healthz')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+
+  payments-service:
+    build:
+      context: ./payments-service
+    expose:
+      - "4001"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4001/healthz"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+ 
+  notifications-service:
+    build:
+      context: ./notifications-service
+    expose:
+      - "4002"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4002/healthz"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+ 
+  orders-service:
+    build:
+      context: ./orders-service
+    expose:
+      - "8001"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - CATALOG_SERVICE_URL=http://catalog-service:4000
+      - INVENTORY_SERVICE_URL=http://inventory-service:8002
+      - PAYMENTS_SERVICE_URL=http://payments-service:4001
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:4002
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+      payments-service:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/healthz')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+ 
+  analytics-service:
+    build:
+      context: ./analytics-service
+    expose:
+      - "8003"
+    environment:
+      - DATABASE_URL=postgresql://northbridge:${POSTGRES_PASSWORD}@postgres:5432/northbridge_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/healthz')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+ 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      orders-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+ 
+# ─── Volumes & Networks ──────────────────────────────────────────────────────
+ 
+volumes:
+  postgres_data:
+ 
+networks:
+  app-network:
+    driver: bridge
+ 
