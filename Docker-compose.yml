@@ -302,7 +302,7 @@ services:
       - "traefik.http.routers.analytics.rule=Host(`dashboardy.chickenkiller.com`) && PathPrefix(`/api/analytics`)"
       - "traefik.http.routers.analytics.entrypoints=websecure"
       - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
-      - "traefik.http.services.analytics.loadbalancer.server.port=8000"
+      - "traefik.http.services.analytics.loadbalancer.server.port=8003"
     networks:
       - app-network
     restart: unless-stopped
@@ -314,8 +314,8 @@ services:
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       orders-service:
         condition: service_healthy
@@ -331,10 +331,10 @@ services:
       retries: 3
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/frontend`)"
+      - "traefik.http.routers.frontend.rule=Host(`shopn.chickenkiller.com`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=8000"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     networks:
       - app-network
     restart: unless-stopped
