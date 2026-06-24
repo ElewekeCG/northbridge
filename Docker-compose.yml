@@ -1,4 +1,43 @@
 services:
+
+# traefik reverse proxy
+  traefik:
+    image: traefik:v3.0
+    command: 
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@chickenkiller.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefikky.chickenkiller.com`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # infrastructure        
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -59,6 +98,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.auth.loadbalancer.server.port=8000"
     networks:
       - app-network
     restart: unless-stopped
@@ -85,6 +130,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.catalog.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/catalog`)"
+      - "traefik.http.routers.catalog.entrypoints=websecure"
+      - "traefik.http.routers.catalog.tls.certresolver=letsencrypt"
+      - "traefik.http.services.catalog.loadbalancer.server.port=4000"
     networks:
       - app-network
     restart: unless-stopped
@@ -112,6 +163,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.inventory.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/inventory`)"
+      - "traefik.http.routers.inventory.entrypoints=websecure"
+      - "traefik.http.routers.inventory.tls.certresolver=letsencrypt"
+      - "traefik.http.services.inventory.loadbalancer.server.port=8002"
     networks:
       - app-network
     restart: unless-stopped
@@ -137,6 +194,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payments.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/payments`)"
+      - "traefik.http.routers.payments.entrypoints=websecure"
+      - "traefik.http.routers.payments.tls.certresolver=letsencrypt"
+      - "traefik.http.services.payments.loadbalancer.server.port=4001"
     networks:
       - app-network
     restart: unless-stopped
@@ -161,6 +224,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notifications.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/notifications`)"
+      - "traefik.http.routers.notifications.entrypoints=websecure"
+      - "traefik.http.routers.notifications.tls.certresolver=letsencrypt"
+      - "traefik.http.services.notifications.loadbalancer.server.port=4002"
     networks:
       - app-network
     restart: unless-stopped
@@ -198,6 +267,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orders.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/orders`)"
+      - "traefik.http.routers.orders.entrypoints=websecure"
+      - "traefik.http.routers.orders.tls.certresolver=letsencrypt"
+      - "traefik.http.services.orders.loadbalancer.server.port=8001"
     networks:
       - app-network
     restart: unless-stopped
@@ -222,6 +297,12 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.analytics.rule=Host(`dashboardy.chickenkiller.com`) && PathPrefix(`/api/analytics`)"
+      - "traefik.http.routers.analytics.entrypoints=websecure"
+      - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
+      - "traefik.http.services.analytics.loadbalancer.server.port=8000"
     networks:
       - app-network
     restart: unless-stopped
@@ -248,6 +329,12 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/frontend`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8000"
     networks:
       - app-network
     restart: unless-stopped
@@ -260,6 +347,7 @@ services:
  
 volumes:
   postgres_data:
+  letsencrypt:
  
 networks:
   app-network:
