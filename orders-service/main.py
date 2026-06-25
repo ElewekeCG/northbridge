@@ -98,7 +98,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> dict:
     return resp.json()
 
 
-@app.get("/healthz")
+@app.get("/api/auth/healthz")
 async def health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))

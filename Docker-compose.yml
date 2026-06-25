@@ -299,7 +299,7 @@ services:
       retries: 3
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.analytics.rule=Host(`dashboardy.chickenkiller.com`) && PathPrefix(`/api/analytics`)"
+      - "traefik.http.routers.analytics.rule=Host(`shopn.chickenkiller.com`) && PathPrefix(`/api/analytics`)"
       - "traefik.http.routers.analytics.entrypoints=websecure"
       - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
       - "traefik.http.services.analytics.loadbalancer.server.port=8003"

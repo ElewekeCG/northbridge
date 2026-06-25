@@ -62,7 +62,7 @@ def get_db():
         db.close()
 
 
-@app.get("/healthz")
+@app.get("/api/auth/healthz")
 async def health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
