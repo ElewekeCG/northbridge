@@ -51,4 +51,102 @@ on:
     branches: [main]
 
 jobs:
-  # TODO: define your CD jobs here
+  build-and-push:
+    name: Build and Push ${{ matrix.service }} to ECR
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - auth-service
+          - orders-service
+          - inventory-service
+          - analytics-service
+          - catalog-service
+          - payments-service
+          - notifications-service
+          - frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image for ${{ matrix.service }}
+        run: |
+          docker build \
+            --tag ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:${{ github.sha }} \
+            --tag ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:latest \
+            ./${{ matrix.service }}
+
+      - name: Push Docker image for ${{ matrix.service }} to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:latest
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Write secrets to .env on EC2
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+            echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "TRAEFIK_DASHBOARD_AUTH=${{ secrets.TRAEFIK_DASHBOARD_AUTH }}" >> .env
+            echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> .env
+            echo "SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}" >> .env
+            echo "BACKUP_S3_BUCKET=${{ secrets.BACKUP_S3_BUCKET }}" >> .env
+            chmod 600 .env
+            # Log in to ECR on EC2
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login \
+              --username AWS \
+              --password-stdin ${{ secrets.ECR_REGISTRY }}
+            # Pull latest images and deploy with Docker Compose
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+            # Health check sweep
+            for service in auth-service orders-service inventory-service analytics-service catalog-service payments-service notifications-service frontend
+            do
+              echo "Checking health of $service..."
+              if docker compose exec -T $service wget -qO- http://localhost:$(
+                case $service in
+                  auth-service)          echo 8000 ;;
+                  orders-service)        echo 8001 ;;
+                  inventory-service)     echo 8002 ;;
+                  analytics-service)     echo 8003 ;;
+                  catalog-service)       echo 4000 ;;
+                  payments-service)      echo 4001 ;;
+                  notifications-service) echo 4002 ;;
+                esac
+              )/healthz > /dev/null; then
+                echo "$service: OK"
+              else
+                echo "$service: FAILED"
+                FAILED=1
+              fi
+            done
+
+            if [ -n "${FAILED:-}" ]; then
+              echo "One or more services failed health checks"
+              exit 1
+            fi
+
+  
