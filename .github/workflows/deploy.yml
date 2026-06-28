@@ -43,13 +43,17 @@
 #   incident where a .env file was committed to source control.
 #
 # REFERENCE: Solution guide Section 8.
-
+ 
 name: CD Build, Push to ECR, Deploy
+ 
 on:
   push:
     branches: [main]
-
+ 
 jobs:
+ 
+  # ─── 1. Build and Push to ECR ─────────────────────────────────────────────
+ 
   build-and-push:
     name: Build and Push ${{ matrix.service }} to ECR
     runs-on: ubuntu-latest
@@ -68,30 +72,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+ 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
+ 
       - name: Log in to Amazon ECR
-        id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image for ${{ matrix.service }}
+ 
+      - name: Build and push ${{ matrix.service }}
         run: |
           docker build \
             --tag ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:${{ github.sha }} \
             --tag ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:latest \
             ./${{ matrix.service }}
-
-      - name: Push Docker image for ${{ matrix.service }} to ECR
-        run: |
           docker push ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:${{ github.sha }}
           docker push ${{ secrets.ECR_REGISTRY }}/northbridge-${{ matrix.service }}:latest
-
+ 
+  # ─── 2. Deploy to EC2 ─────────────────────────────────────────────────────
+ 
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
@@ -99,7 +101,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+ 
       - name: Write .env file
         run: |
           cat > .env << EOF
@@ -115,7 +117,7 @@ jobs:
           AWS_REGION=${{ secrets.AWS_REGION }}
           ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
           EOF
-
+ 
       - name: Copy .env to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -124,7 +126,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ".env"
           target: "/home/${{ secrets.EC2_USER }}/northbridge/"
-
+ 
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -135,23 +137,22 @@ jobs:
             set -eo pipefail
             cd ~/northbridge
             chmod 600 .env
-
-            # Log in to ECR on EC2
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login \
-              --username AWS \
-              --password-stdin ${{ secrets.ECR_REGISTRY }}
-            # Pull latest images and deploy with Docker Compose
+ 
+            # Log in to ECR
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
+              | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+ 
+            # Pull latest images and redeploy
             docker compose pull
             docker compose up -d --remove-orphans
-
+ 
+            # Wait for services to stabilise
+            echo "Waiting 30s for services to stabilise..."
+            sleep 30
+ 
             # Health check sweep
-            for service in auth-service orders-service inventory-service analytics-service catalog-service payments-service notifications-service frontend
-            do
-              echo "waiting 30 seconds for service to stabilize..."
-              sleep 30
-
-              FAILED=0
-              
+            FAILED=0
+ 
             check_health() {
               local service=$1
               local port=$2
@@ -163,7 +164,7 @@ jobs:
                 FAILED=1
               fi
             }
-
+ 
             check_health auth-service 8000
             check_health orders-service 8001
             check_health inventory-service 8002
@@ -171,13 +172,12 @@ jobs:
             check_health catalog-service 4000
             check_health payments-service 4001
             check_health notifications-service 4002
-
+ 
             if [ "$FAILED" -eq 1 ]; then
               echo "One or more services failed health checks"
               exit 1
             fi
-
+ 
             echo "── Deploy complete ──"
             docker compose ps
-
-  
+ 
