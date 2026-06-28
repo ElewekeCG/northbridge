@@ -100,17 +100,30 @@ jobs:
     steps:
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.6
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          TRAEFIK_DASHBOARD_AUTH: ${{ secrets.TRAEFIK_DASHBOARD_AUTH }}
+          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: POSTGRES_PASSWORD,REDIS_PASSWORD,JWT_SECRET,AUTH_SECRET_KEY,STRIPE_SECRET_KEY,TRAEFIK_DASHBOARD_AUTH,GRAFANA_ADMIN_PASSWORD,SLACK_WEBHOOK_URL,BACKUP_S3_BUCKET,AWS_REGION,ECR_REGISTRY
           script: |
             set -euo pipefail
 
             cd ~/northbridge
 
             # Write secrets to .env on EC2
-            "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
+            printf "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
             "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}"
             "JWT_SECRET=${{ secrets.JWT_SECRET }}"
             "AUTH_SECRET_KEY=${{ secrets.AUTH_SECRET_KEY }}"
