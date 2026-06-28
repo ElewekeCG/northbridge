@@ -127,31 +127,14 @@ jobs:
           target: "~/northbridge/"
 
       - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@v0.1.6
-        
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: POSTGRES_PASSWORD,REDIS_PASSWORD,JWT_SECRET,AUTH_SECRET_KEY,STRIPE_SECRET_KEY,TRAEFIK_DASHBOARD_AUTH,GRAFANA_ADMIN_PASSWORD,SLACK_WEBHOOK_URL,BACKUP_S3_BUCKET,AWS_REGION,ECR_REGISTRY
           script: |
             set -euo pipefail
-
             cd ~/northbridge
-
-            # Write secrets to .env on EC2
-             printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD" > .env
-            printf 'REDIS_PASSWORD=%s\n' "$REDIS_PASSWORD" >> .env
-            printf 'JWT_SECRET=%s\n' "$JWT_SECRET" >> .env
-            printf 'AUTH_SECRET_KEY=%s\n' "$AUTH_SECRET_KEY" >> .env
-            printf 'STRIPE_SECRET_KEY=%s\n' "$STRIPE_SECRET_KEY" >> .env
-            printf 'TRAEFIK_DASHBOARD_AUTH=%s\n' "$TRAEFIK_DASHBOARD_AUTH" >> .env
-            printf 'GRAFANA_ADMIN_PASSWORD=%s\n' "$GRAFANA_ADMIN_PASSWORD" >> .env
-            printf 'SLACK_WEBHOOK_URL=%s\n' "$SLACK_WEBHOOK_URL" >> .env
-            printf 'BACKUP_S3_BUCKET=%s\n' "$BACKUP_S3_BUCKET" >> .env
-            printf 'AWS_REGION=%s\n' "$AWS_REGION" >> .env
-            printf 'ECR_REGISTRY=%s\n' "$ECR_REGISTRY" >> .env
-
             chmod 600 .env
 
             # Log in to ECR on EC2
