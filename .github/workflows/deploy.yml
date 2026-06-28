@@ -44,7 +44,7 @@
 #
 # REFERENCE: Solution guide Section 8.
 
-name: CD — Build, Push to ECR, Deploy
+name: CD Build, Push to ECR, Deploy
 
 on:
   push:
