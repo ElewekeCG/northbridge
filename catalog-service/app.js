@@ -13,6 +13,7 @@
  * is invalidated explicitly on stock updates from Orders Service.
  */
 
+
 const express = require('express');
 const { Pool } = require('pg');
 const { createClient } = require('redis');

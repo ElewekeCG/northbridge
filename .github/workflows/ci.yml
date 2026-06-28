@@ -90,7 +90,7 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: npm ci
 
-  # -- 3. Build Docker Images ------------------
+  # -- 3. Build Docker Images -----------------
 
   build-images:
     name: Build ${{ matrix.service }} image

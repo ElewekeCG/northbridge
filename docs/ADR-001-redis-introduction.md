@@ -91,3 +91,4 @@ problem. This is a deliberate exclusion, not an oversight.
   would not be shared across replicas and would not be invalidated
   consistently on writes. Redis gives us a single shared cache visible to
   all replicas.
+  adding new line
