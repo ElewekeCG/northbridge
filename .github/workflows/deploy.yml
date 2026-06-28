@@ -152,32 +152,33 @@ jobs:
               sleep 30
 
               FAILED=0
-              for service in auth-service orders-service inventory-service analytics-service catalog-service payments-service notifications-service frontend
-              do
-                echo "Checking health of $service..."
-                port=$(
-                  case $service in
-                    auth-service)          echo 8000 ;;
-                    orders-service)        echo 8001 ;;
-                    inventory-service)     echo 8002 ;;
-                    analytics-service)     echo 8003 ;;
-                    catalog-service)       echo 4000 ;;
-                    payments-service)      echo 4001 ;;
-                    notifications-service) echo 4002 ;;
-                    frontend)              echo 3000 ;;
-                  esac
-                )
-              if docker compose exec northbridge-${service}-1 wget -qO- http://localhost:$port/healthz > /dev/null; then
+              
+            check_health() {
+              local service=$1
+              local port=$2
+              echo "Checking health of $service..."
+              if docker exec northbridge-${service}-1 wget -qO- http://localhost:${port}/healthz > /dev/null 2>&1; then
                 echo "$service: OK"
               else
                 echo "$service: FAILED"
                 FAILED=1
               fi
-            done
+            }
+
+            check_health auth-service 8000
+            check_health orders-service 8001
+            check_health inventory-service 8002
+            check_health analytics-service 8003
+            check_health catalog-service 4000
+            check_health payments-service 4001
+            check_health notifications-service 4002
 
             if [ "$FAILED" -eq 1 ]; then
               echo "One or more services failed health checks"
               exit 1
             fi
+
+            echo "── Deploy complete ──"
+            docker compose ps
 
   
