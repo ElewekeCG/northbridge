@@ -104,7 +104,7 @@ jobs:
  
       - name: Write .env file
         run: |
-          cprintf 'POSTGRES_PASSWORD=%s\n' '${{ secrets.POSTGRES_PASSWORD }}' > .env
+          printf 'POSTGRES_PASSWORD=%s\n' '${{ secrets.POSTGRES_PASSWORD }}' > .env
           printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' >> .env
           printf 'JWT_SECRET=%s\n' '${{ secrets.JWT_SECRET }}' >> .env
           printf 'AUTH_SECRET_KEY=%s\n' '${{ secrets.AUTH_SECRET_KEY }}' >> .env
