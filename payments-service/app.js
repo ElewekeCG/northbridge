@@ -40,14 +40,17 @@ async function ensureTable() {
   `);
 }
 
-app.get('/api/payments/healthz', async (req, res) => {
+async function healthHandler(req, res) {
   try {
     await pool.query('SELECT 1');
     res.status(200).json({ status: 'ok', db: 'ok', service: 'payments-service' });
   } catch {
     res.status(503).json({ status: 'degraded', db: 'error' });
   }
-});
+}
+
+app.get('/healthz', healthHandler);
+app.get('/api/payments/healthz', healthHandler);
 
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);
