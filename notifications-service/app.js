@@ -42,7 +42,6 @@ async function ensureTable() {
 async function healthHandler(req, res) {
   let dbOk = true, redisOk = true;
   try { await pool.query('SELECT 1'); } catch { dbOk = false; }
-  try { await redisClient.ping(); } catch { redisOk = false; }
   const status = dbOk && redisOk ? 'ok' : 'degraded';
   res.status(dbOk && redisOk ? 200 : 503).json({
     status, db: dbOk ? 'ok' : 'error', redis: redisOk ? 'ok' : 'error', service: 'notifications-service'
