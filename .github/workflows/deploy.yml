@@ -104,19 +104,17 @@ jobs:
  
       - name: Write .env file
         run: |
-          cat > .env << EOF
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          AUTH_SECRET_KEY=${{ secrets.AUTH_SECRET_KEY }}
-          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
-          TRAEFIK_DASHBOARD_AUTH=${{ secrets.TRAEFIK_DASHBOARD_AUTH }}
-          GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-          SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
-          BACKUP_S3_BUCKET=${{ secrets.BACKUP_S3_BUCKET }}
-          AWS_REGION=${{ secrets.AWS_REGION }}
-          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
-          EOF
+          cprintf 'POSTGRES_PASSWORD=%s\n' '${{ secrets.POSTGRES_PASSWORD }}' > .env
+          printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' >> .env
+          printf 'JWT_SECRET=%s\n' '${{ secrets.JWT_SECRET }}' >> .env
+          printf 'AUTH_SECRET_KEY=%s\n' '${{ secrets.AUTH_SECRET_KEY }}' >> .env
+          printf 'STRIPE_SECRET_KEY=%s\n' '${{ secrets.STRIPE_SECRET_KEY }}' >> .env
+          printf 'TRAEFIK_DASHBOARD_AUTH=%s\n' '${{ secrets.TRAEFIK_DASHBOARD_AUTH }}' >> .env
+          printf 'GRAFANA_ADMIN_PASSWORD=%s\n' '${{ secrets.GRAFANA_ADMIN_PASSWORD }}' >> .env
+          printf 'SLACK_WEBHOOK_URL=%s\n' '${{ secrets.SLACK_WEBHOOK_URL }}' >> .env
+          printf 'BACKUP_S3_BUCKET=%s\n' '${{ secrets.BACKUP_S3_BUCKET }}' >> .env
+          printf 'AWS_REGION=%s\n' '${{ secrets.AWS_REGION }}' >> .env
+          printf 'ECR_REGISTRY=%s\n' '${{ secrets.ECR_REGISTRY }}' >> .env
  
       - name: Copy .env to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -184,7 +182,7 @@ jobs:
               echo "One or more services failed health checks"
               exit 1
             fi
-            
+
             echo "── Deploy complete ──"
             docker compose ps
  
