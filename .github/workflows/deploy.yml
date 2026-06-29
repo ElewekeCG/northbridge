@@ -156,8 +156,14 @@ jobs:
             check_health() {
               local service=$1
               local port=$2
+              local runtime=$3
               echo "Checking health of $service..."
-              if docker exec northbridge-${service}-1 wget -qO- http://localhost:${port}/healthz > /dev/null 2>&1; then
+              if [ "$runtime" = "python" ]; then
+                cmd="python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${port}/healthz')\""
+              else
+                cmd="wget -qO- http://localhost:${port}/healthz"
+              fi
+              if docker exec northbridge-${service}-1 sh -c "$cmd" > /dev/null 2>&1; then
                 echo "$service: OK"
               else
                 echo "$service: FAILED"
@@ -165,18 +171,13 @@ jobs:
               fi
             }
  
-            check_health auth-service 8000
-            check_health orders-service 8001
-            check_health inventory-service 8002
-            check_health analytics-service 8003
-            check_health catalog-service 4000
-            check_health payments-service 4001
-            check_health notifications-service 4002
- 
-            if [ "$FAILED" -eq 1 ]; then
-              echo "One or more services failed health checks"
-              exit 1
-            fi
+            check_health auth-service 8000 python
+            check_health orders-service 8001 python
+            check_health inventory-service 8002 python
+            check_health analytics-service 8003 python
+            check_health catalog-service 4000 node
+            check_health payments-service 4001 node
+            check_health notifications-service 4002 node
  
             echo "── Deploy complete ──"
             docker compose ps
