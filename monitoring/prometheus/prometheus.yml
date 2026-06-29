@@ -36,3 +36,74 @@
 # REFERENCE: Solution guide Section 6.
 
 # TODO: write the Prometheus scrape configuration here
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+
+  # ─── Prometheus itself ────────────────────────────────────────────────────
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ─── Infrastructure exporters ─────────────────────────────────────────────
+  - job_name: node-exporter
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: postgres-exporter
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: redis-exporter
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # ─── Traefik ──────────────────────────────────────────────────────────────
+  - job_name: traefik
+    static_configs:
+      - targets: ['traefik:8080']
+
+  # ─── Application services ─────────────────────────────────────────────────
+  - job_name: auth-service
+    static_configs:
+      - targets: ['auth-service:8000']
+
+  - job_name: catalog-service
+    static_configs:
+      - targets: ['catalog-service:4000']
+
+  - job_name: orders-service
+    static_configs:
+      - targets: ['orders-service:8001']
+
+  - job_name: payments-service
+    static_configs:
+      - targets: ['payments-service:4001']
+
+  - job_name: inventory-service
+    static_configs:
+      - targets: ['inventory-service:8002']
+
+  - job_name: notifications-service
+    static_configs:
+      - targets: ['notifications-service:4002']
+
+  - job_name: analytics-service
+    static_configs:
+      - targets: ['analytics-service:8003']
