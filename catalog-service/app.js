@@ -96,6 +96,7 @@ async function ensureTable() {
   }
 }
 
+
 // ── Routes ───────────────────────────────────────────────────────────────
 app.get('/api/catalog/healthz', async (req, res) => {
   let dbOk = true, redisOk = true;
