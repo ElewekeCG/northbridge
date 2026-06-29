@@ -40,7 +40,7 @@ async function ensureTable() {
   `);
 }
 
-app.get('/healthz', async (req, res) => {
+app.get('/api/payments/healthz', async (req, res) => {
   try {
     await pool.query('SELECT 1');
     res.status(200).json({ status: 'ok', db: 'ok', service: 'payments-service' });

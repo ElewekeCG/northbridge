@@ -97,7 +97,7 @@ async function ensureTable() {
 }
 
 // ── Routes ───────────────────────────────────────────────────────────────
-app.get('/healthz', async (req, res) => {
+app.get('/api/catalog/healthz', async (req, res) => {
   let dbOk = true, redisOk = true;
   try { await pool.query('SELECT 1'); } catch { dbOk = false; }
   try { await redisClient.ping(); } catch { redisOk = false; }
