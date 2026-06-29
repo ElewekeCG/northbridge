@@ -180,6 +180,11 @@ jobs:
             check_health payments-service 4001 node
             check_health notifications-service 4002 node
  
+            if [ "$FAILED" -eq 1 ]; then
+              echo "One or more services failed health checks"
+              exit 1
+            fi
+            
             echo "── Deploy complete ──"
             docker compose ps
  

@@ -79,6 +79,7 @@ services:
 
   # app services
   auth-service:
+    image: ${ECR_REGISTRY}/northbridge-auth-service:latest
     build:
       context: ./auth-service
     expose:
@@ -112,6 +113,7 @@ services:
         limits:
           memory: 192M
   catalog-service:
+    image: ${ECR_REGISTRY}/northbridge-catalog-service:latest
     build:
       context: ./catalog-service
     expose:
@@ -145,6 +147,7 @@ services:
           memory: 192M
  
   inventory-service:
+    image: ${ECR_REGISTRY}/northbridge-inventory-service:latest
     build:
       context: ./inventory-service
     expose:
@@ -209,6 +212,7 @@ services:
           memory: 192M
  
   notifications-service:
+    image: ${ECR_REGISTRY}/northbridge-notifications-service:latest
     build:
       context: ./notifications-service
     expose:
@@ -239,6 +243,7 @@ services:
           memory: 128M
  
   orders-service:
+    image: ${ECR_REGISTRY}/northbridge-orders-service:latest
     build:
       context: ./orders-service
     expose:
@@ -282,6 +287,7 @@ services:
           memory: 256M
  
   analytics-service:
+    image: ${ECR_REGISTRY}/northbridge-analytics-service:latest
     build:
       context: ./analytics-service
     expose:
@@ -312,6 +318,7 @@ services:
           memory: 128M
  
   frontend:
+    image: ${ECR_REGISTRY}/northbridge-frontend:latest
     build:
       context: ./frontend
     expose:
