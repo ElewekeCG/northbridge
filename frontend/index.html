@@ -155,7 +155,7 @@
       const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ product_id: productId, quantity: 1, card_last4: '4242' }),
+        body: JSON.stringify({ product_id: productId, quantity: 1, card_last4: '0000' }),
       });
       const data = await res.json();
       alert(res.ok ? `Order #${data.id} placed!` : (data.detail || 'Order failed'));

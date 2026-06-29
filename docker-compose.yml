@@ -14,6 +14,9 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=admin@chickenkiller.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entrypoint=websecure"
+      - "--api.insecure=true"
     ports:
       - "80:80"
       - "443:443"
@@ -181,6 +184,7 @@ services:
           memory: 192M
 
   payments-service:
+    image: ${ECR_REGISTRY}/northbridge-payments-service:latest
     build:
       context: ./payments-service
     expose:
@@ -454,9 +458,7 @@ volumes:
   postgres_data:
   letsencrypt:
   prometheus_data:
-    - "--metrics.prometheus=true"
-    - "--metrics.promethus.entrypoints=websecure"
-    - "--api.insecure=truewha"
+
 networks:
   app-network:
     driver: bridge
