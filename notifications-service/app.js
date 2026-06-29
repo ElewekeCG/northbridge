@@ -39,14 +39,18 @@ async function ensureTable() {
   `);
 }
 
-app.get('/api/notifications/healthz', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    res.status(200).json({ status: 'ok', db: 'ok', service: 'notifications-service' });
-  } catch {
-    res.status(503).json({ status: 'degraded', db: 'error' });
-  }
-});
+async function healthHandler(req, res) {
+  let dbOk = true, redisOk = true;
+  try { await pool.query('SELECT 1'); } catch { dbOk = false; }
+  try { await redisClient.ping(); } catch { redisOk = false; }
+  const status = dbOk && redisOk ? 'ok' : 'degraded';
+  res.status(dbOk && redisOk ? 200 : 503).json({
+    status, db: dbOk ? 'ok' : 'error', redis: redisOk ? 'ok' : 'error', service: 'notifications-service'
+  });
+}
+
+app.get('/healthz', healthHandler);
+app.get('/api/notifications/healthz', healthHandler);
 
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);
