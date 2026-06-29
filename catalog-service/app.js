@@ -98,7 +98,7 @@ async function ensureTable() {
 
 
 // ── Routes ───────────────────────────────────────────────────────────────
-app.get('/api/catalog/healthz', async (req, res) => {
+async function healthHandler(req, res) {
   let dbOk = true, redisOk = true;
   try { await pool.query('SELECT 1'); } catch { dbOk = false; }
   try { await redisClient.ping(); } catch { redisOk = false; }
@@ -106,7 +106,10 @@ app.get('/api/catalog/healthz', async (req, res) => {
   res.status(dbOk && redisOk ? 200 : 503).json({
     status, db: dbOk ? 'ok' : 'error', redis: redisOk ? 'ok' : 'error', service: 'catalog-service'
   });
-});
+}
+
+app.get('/healthz', healthHandler);
+app.get('/api/catalog/healthz', healthHandler);
 
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);
