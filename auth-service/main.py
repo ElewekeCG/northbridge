@@ -131,7 +131,7 @@ def verify_token_cached(token: str) -> dict:
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     return verify_token_cached(credentials.credentials)
 
-@app.get("/api/auth/healthz")
+@app.get("/healthz")
 async def health(db: Session = Depends(get_db)):
     db_status = "ok"
     redis_status = "ok"
