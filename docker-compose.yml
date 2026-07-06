@@ -455,7 +455,7 @@ services:
     image: grafana/grafana:10.4.0
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-      - GF_SECURITY_ADMIN-USER=admin
+      - GF_SECURITY_ADMIN_USER=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -500,6 +500,7 @@ volumes:
   postgres_data:
   letsencrypt:
   prometheus_data:
+  grafana_data:
 
 networks:
   app-network:

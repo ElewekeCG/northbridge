@@ -119,13 +119,13 @@ app.get('/metrics', async (req, res) => {
 app.get('/api/catalog/products', async (req, res) => {
   try {
     const { category } = req.query;
-    // const cacheKey = `catalog:products:${category || 'all'}`;
+    const cacheKey = `catalog:products:${category || 'all'}`;
 
-    // const cached = await redisClient.get(cacheKey);
-    // if (cached) {
-    //   cacheHits.inc();
-    //   return res.status(200).json(JSON.parse(cached));
-    // }
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      cacheHits.inc();
+      return res.status(200).json(JSON.parse(cached));
+    }
     cacheMisses.inc();
 
     let query = 'SELECT * FROM products';
