@@ -187,7 +187,7 @@ app.post('/api/catalog/products', async (req, res) => {
   }
 });
 
-// Internal endpoint — called by orders-service. Invalidates the cache
+// Internal endpoint — called by orders-service. Invalidates the cache,
 // for this product and the list cache since stock has changed.
 app.patch('/api/catalog/products/:id/stock', async (req, res) => {
   const { delta } = req.body;
