@@ -19,3 +19,12 @@
 # Prometheus is not exposed on a public port.
 
 # TODO: write the datasource provisioning configuration here
+
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090   (container name, not localhost)
+    isDefault: true
+    editable: false

@@ -135,6 +135,10 @@ jobs:
             set -eo pipefail
             cd ~/northbridge
             git pull origin main
+            # Substitute Slack webhook URL into alertmanager config
+            sed "s|SLACK_WEBHOOK_URL_PLACEHOLDER|${SLACK_WEBHOOK_URL}|g" \
+              monitoring/alertmanager/alertmanager.yml \
+              > monitoring/alertmanager/alertmanager-rendered.yml
             chmod 600 .env
  
             # Log in to ECR

@@ -22,3 +22,14 @@
 # Grafana to load it automatically.
 
 # TODO: write the dashboard provisioning configuration here
+apiVersion: 1
+providers:
+  - name: "Northbridge Dashboards"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
