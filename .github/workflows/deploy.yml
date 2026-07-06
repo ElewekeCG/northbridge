@@ -102,28 +102,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
  
-      - name: Write .env file
-        run: |
-          printf 'POSTGRES_PASSWORD=%s\n' '${{ secrets.POSTGRES_PASSWORD }}' > .env
-          printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' >> .env
-          printf 'JWT_SECRET=%s\n' '${{ secrets.JWT_SECRET }}' >> .env
-          printf 'AUTH_SECRET_KEY=%s\n' '${{ secrets.AUTH_SECRET_KEY }}' >> .env
-          printf 'STRIPE_SECRET_KEY=%s\n' '${{ secrets.STRIPE_SECRET_KEY }}' >> .env
-          printf 'TRAEFIK_DASHBOARD_AUTH=%s\n' '${{ secrets.TRAEFIK_DASHBOARD_AUTH }}' >> .env
-          printf 'GRAFANA_ADMIN_PASSWORD=%s\n' '${{ secrets.GRAFANA_ADMIN_PASSWORD }}' >> .env
-          printf 'SLACK_WEBHOOK_URL=%s\n' '${{ secrets.SLACK_WEBHOOK_URL }}' >> .env
-          printf 'BACKUP_S3_BUCKET=%s\n' '${{ secrets.BACKUP_S3_BUCKET }}' >> .env
-          printf 'AWS_REGION=%s\n' '${{ secrets.AWS_REGION }}' >> .env
-          printf 'ECR_REGISTRY=%s\n' '${{ secrets.ECR_REGISTRY }}' >> .env
+      # - name: Write .env file
+      #   run: |
+      #     printf 'POSTGRES_PASSWORD=%s\n' '${{ secrets.POSTGRES_PASSWORD }}' > .env
+      #     printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' >> .env
+      #     printf 'JWT_SECRET=%s\n' '${{ secrets.JWT_SECRET }}' >> .env
+      #     printf 'AUTH_SECRET_KEY=%s\n' '${{ secrets.AUTH_SECRET_KEY }}' >> .env
+      #     printf 'STRIPE_SECRET_KEY=%s\n' '${{ secrets.STRIPE_SECRET_KEY }}' >> .env
+      #     printf 'TRAEFIK_DASHBOARD_AUTH=%s\n' '${{ secrets.TRAEFIK_DASHBOARD_AUTH }}' >> .env
+      #     printf 'GRAFANA_ADMIN_PASSWORD=%s\n' '${{ secrets.GRAFANA_ADMIN_PASSWORD }}' >> .env
+      #     printf 'SLACK_WEBHOOK_URL=%s\n' '${{ secrets.SLACK_WEBHOOK_URL }}' >> .env
+      #     printf 'BACKUP_S3_BUCKET=%s\n' '${{ secrets.BACKUP_S3_BUCKET }}' >> .env
+      #     printf 'AWS_REGION=%s\n' '${{ secrets.AWS_REGION }}' >> .env
+      #     printf 'ECR_REGISTRY=%s\n' '${{ secrets.ECR_REGISTRY }}' >> .env
  
-      - name: Copy .env to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: ".env"
-          target: "/home/${{ secrets.EC2_USER }}/northbridge/"
+      # - name: Copy .env to EC2
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     source: ".env"
+      #     target: "/home/${{ secrets.EC2_USER }}/northbridge/"
  
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -136,10 +136,9 @@ jobs:
             cd ~/northbridge
             git pull origin main
             # Substitute Slack webhook URL into alertmanager config
-            sed "s|SLACK_WEBHOOK_URL_PLACEHOLDER|${SLACK_WEBHOOK_URL}|g" \
+            sed "s|SLACK_WEBHOOK_URL_PLACEHOLDER|$(grep SLACK_WEBHOOK_URL .env | cut -d= -f2) |g" \
               monitoring/alertmanager/alertmanager.yml \
               > monitoring/alertmanager/alertmanager-rendered.yml
-            chmod 600 .env
  
             # Log in to ECR
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
