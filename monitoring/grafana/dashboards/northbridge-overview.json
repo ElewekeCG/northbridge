@@ -15,6 +15,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum by (job) (rate(http_request_duration_seconds_count[5m]))",
           "legendFormat": "{{job}}"
         }
@@ -27,6 +31,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum by (job) (rate(http_request_duration_seconds_count{status_code=~\"5..\"}[5m]))",
           "legendFormat": "{{job}}"
         }
@@ -39,6 +47,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))",
           "legendFormat": "{{job}}"
         }
@@ -51,6 +63,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "container_memory_usage_bytes{name=~\"northbridge-.*\"}",
           "legendFormat": "{{name}}"
         }
@@ -63,6 +79,10 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 16 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
           "legendFormat": "CPU %"
         }
@@ -75,6 +95,10 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 16 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
           "legendFormat": "Memory %"
         }
@@ -87,6 +111,10 @@
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 16 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})) * 100",
           "legendFormat": "Disk %"
         }
@@ -99,6 +127,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "pg_stat_activity_count",
           "legendFormat": "{{state}}"
         }
@@ -111,6 +143,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "rate(catalog_cache_hits_total[5m]) / (rate(catalog_cache_hits_total[5m]) + rate(catalog_cache_misses_total[5m]))",
           "legendFormat": "Hit Rate"
         }
@@ -123,6 +159,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "redis_memory_used_bytes",
           "legendFormat": "Used Memory"
         }
@@ -135,6 +175,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "rate(payments_processed_total[5m])",
           "legendFormat": "{{status}}"
         }
