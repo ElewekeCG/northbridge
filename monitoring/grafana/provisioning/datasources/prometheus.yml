@@ -25,6 +25,6 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://prometheus:9090   (container name, not localhost)
+    url: http://prometheus:9090
     isDefault: true
     editable: false
