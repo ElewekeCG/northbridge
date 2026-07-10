@@ -69,6 +69,7 @@
     const API_BASE = '';
     let token = localStorage.getItem('northbridge_token') || '';
 
+    
     async function checkHealth() {
       const services = ['auth', 'catalog', 'orders', 'payments', 'inventory', 'notifications', 'analytics'];
       const results = await Promise.all(services.map(async (s) => {
