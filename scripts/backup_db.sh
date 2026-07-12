@@ -22,7 +22,11 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 if [ -f "$PROJECT_DIR/.env" ]; then
   set -a
-  source "$PROJECT_DIR/.env"
+  while IFS='=' read -r key value; do
+    [[ "$key" =~ ^#.*$ ]] && continue
+    [[ -z "$key" ]] && continue
+    export "$key"="$value" 2>/dev/null || true
+  done < "$PROJECT_DIR/.env"
   set +a
 fi
 
