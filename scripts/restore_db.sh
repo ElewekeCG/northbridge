@@ -110,11 +110,11 @@ docker compose stop auth-service catalog-service inventory-service orders-servic
 
 # ── Drop and recreate the database ───────────────────────────────────────────
 echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Dropping and recreating ${POSTGRES_DB}..."
-docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -c \
+docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -d postgres -c \
   "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${POSTGRES_DB}' AND pid <> pg_backend_pid();"
-docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -c \
+docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -d postgres -c \
   "DROP DATABASE IF EXISTS ${POSTGRES_DB};"
-docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -c \
+docker exec northbridge-postgres-1 psql -U "$POSTGRES_USER" -d postgres -c \
   "CREATE DATABASE ${POSTGRES_DB} OWNER ${POSTGRES_USER};"
 
 # ── Restore ───────────────────────────────────────────────────────────────────
