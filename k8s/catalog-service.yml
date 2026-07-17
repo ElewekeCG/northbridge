@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  namespace: northbridge
+spec:
+  selector:
+    app: catalog-service
+  ports:
+    - port: 4000
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+        - name: catalog-service
+          image: ${ECR_REGISTRY}/northbridge-catalog-service:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              value: redis://redis:6379/1
+          resources:
+            requests:
+              memory: 96Mi
+              cpu: 100m
+            limits:
+              memory: 192Mi
+              cpu: 500m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 4000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 30

@@ -1,0 +1,364 @@
+# inventory-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: northbridge
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - port: 8002
+      targetPort: 8002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: ${ECR_REGISTRY}/northbridge-inventory-service:latest
+          ports:
+            - containerPort: 8002
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              value: redis://redis:6379/2
+          resources:
+            requests:
+              memory: 96Mi
+              cpu: 100m
+            limits:
+              memory: 192Mi
+              cpu: 500m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8002
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+# payments-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service
+  namespace: northbridge
+spec:
+  selector:
+    app: payments-service
+  ports:
+    - port: 4001
+      targetPort: 4001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-service
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payments-service
+  template:
+    metadata:
+      labels:
+        app: payments-service
+    spec:
+      containers:
+        - name: payments-service
+          image: ${ECR_REGISTRY}/northbridge-payments-service:latest
+          ports:
+            - containerPort: 4001
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: STRIPE_SECRET_KEY
+          resources:
+            requests:
+              memory: 96Mi
+              cpu: 100m
+            limits:
+              memory: 192Mi
+              cpu: 500m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 4001
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+# notifications-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-service
+  namespace: northbridge
+spec:
+  selector:
+    app: notifications-service
+  ports:
+    - port: 4002
+      targetPort: 4002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-service
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notifications-service
+  template:
+    metadata:
+      labels:
+        app: notifications-service
+    spec:
+      containers:
+        - name: notifications-service
+          image: ${ECR_REGISTRY}/northbridge-notifications-service:latest
+          ports:
+            - containerPort: 4002
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 128Mi
+              cpu: 250m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 4002
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+# orders-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-service
+  namespace: northbridge
+spec:
+  selector:
+    app: orders-service
+  ports:
+    - port: 8001
+      targetPort: 8001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-service
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orders-service
+  template:
+    metadata:
+      labels:
+        app: orders-service
+    spec:
+      containers:
+        - name: orders-service
+          image: ${ECR_REGISTRY}/northbridge-orders-service:latest
+          ports:
+            - containerPort: 8001
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+            - name: AUTH_SERVICE_URL
+              value: http://auth-service:8000
+            - name: CATALOG_SERVICE_URL
+              value: http://catalog-service:4000
+            - name: INVENTORY_SERVICE_URL
+              value: http://inventory-service:8002
+            - name: PAYMENTS_SERVICE_URL
+              value: http://payments-service:4001
+            - name: NOTIFICATIONS_SERVICE_URL
+              value: http://notifications-service:4002
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 150m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8001
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+# analytics-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: northbridge
+spec:
+  selector:
+    app: analytics-service
+  ports:
+    - port: 8003
+      targetPort: 8003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: northbridge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: ${ECR_REGISTRY}/northbridge-analytics-service:latest
+          ports:
+            - containerPort: 8003
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: northbridge-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 128Mi
+              cpu: 250m
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8003
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+# frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: northbridge
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: northbridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ${ECR_REGISTRY}/northbridge-frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 25m
+            limits:
+              memory: 64Mi
+              cpu: 100m
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 30
