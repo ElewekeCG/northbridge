@@ -1,4 +1,3 @@
-# terraform/outputs.tf
 
 output "cluster_name" {
   description = "EKS cluster name"

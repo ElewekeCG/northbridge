@@ -1,5 +1,5 @@
-# terraform/main.tf
 # Northbridge Commerce — Two-node EKS cluster
+
 # Provisions a managed EKS cluster with a two-node managed node group
 # in eu-west-2, using existing VPC infrastructure.
 
