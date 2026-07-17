@@ -11,10 +11,11 @@ variable "cluster_name" {
   default     = "northbridge"
 }
 
+
 variable "kubernetes_version" {
   description = "Kubernetes version for the EKS cluster"
   type        = string
-  default     = "1.29"
+  default     = "1.32"
 }
 
 variable "node_instance_type" {
