@@ -9,3 +9,4 @@ letsencrypt/
 acme.json
 terraform/.terraform/
 terraform/.terraform.lock.hcl
+monitoring/alertmanager/alertmanager-rendered.yml
