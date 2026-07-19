@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: ${ECR_REGISTRY}/northbridge-auth-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-auth-service:latest
           ports:
             - containerPort: 8000
           env:

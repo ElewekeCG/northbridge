@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: catalog-service
-          image: ${ECR_REGISTRY}/northbridge-catalog-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-catalog-service:latest
           ports:
             - containerPort: 4000
           env:

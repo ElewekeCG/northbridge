@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: inventory-service
-          image: ${ECR_REGISTRY}/northbridge-inventory-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-inventory-service:latest
           ports:
             - containerPort: 8002
           env:
@@ -89,7 +89,7 @@ spec:
     spec:
       containers:
         - name: payments-service
-          image: ${ECR_REGISTRY}/northbridge-payments-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-payments-service:latest
           ports:
             - containerPort: 4001
           env:
@@ -153,7 +153,7 @@ spec:
     spec:
       containers:
         - name: notifications-service
-          image: ${ECR_REGISTRY}/northbridge-notifications-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-notifications-service:latest
           ports:
             - containerPort: 4002
           env:
@@ -212,7 +212,7 @@ spec:
     spec:
       containers:
         - name: orders-service
-          image: ${ECR_REGISTRY}/northbridge-orders-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-orders-service:latest
           ports:
             - containerPort: 8001
           env:
@@ -281,7 +281,7 @@ spec:
     spec:
       containers:
         - name: analytics-service
-          image: ${ECR_REGISTRY}/northbridge-analytics-service:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-analytics-service:latest
           ports:
             - containerPort: 8003
           env:
@@ -340,7 +340,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ${ECR_REGISTRY}/northbridge-frontend:latest
+          image: 891377349839.dkr.ecr.eu-west-2.amazonaws.com/northbridge-frontend:latest
           ports:
             - containerPort: 80
           resources:
