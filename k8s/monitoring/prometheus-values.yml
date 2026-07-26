@@ -1,0 +1,125 @@
+
+grafana:
+
+  adminPassword: "${GRAFANA_ADMIN_PASSWORD}"
+
+  ingress:
+
+    enabled: false
+
+  dashboardProviders:
+
+    dashboardproviders.yaml:
+
+      apiVersion: 1
+
+      providers:
+
+        - name: northbridge
+
+          orgId: 1
+
+          folder: Northbridge
+
+          type: file
+
+          disableDeletion: false
+
+          editable: true
+
+          options:
+
+            path: /var/lib/grafana/dashboards/northbridge
+
+  dashboardsConfigMaps:
+
+    northbridge: northbridge-dashboards
+
+prometheus:
+
+  prometheusSpec:
+
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+    podMonitorSelectorNilUsesHelmValues: false
+
+    additionalScrapeConfigs:
+
+      - job_name: auth-service
+
+        static_configs:
+
+          - targets: ['auth-service.northbridge.svc.cluster.local:8000']
+
+      - job_name: catalog-service
+
+        static_configs:
+
+          - targets: ['catalog-service.northbridge.svc.cluster.local:4000']
+
+      - job_name: orders-service
+
+        static_configs:
+
+          - targets: ['orders-service.northbridge.svc.cluster.local:8001']
+
+      - job_name: payments-service
+
+        static_configs:
+
+          - targets: ['payments-service.northbridge.svc.cluster.local:4001']
+
+      - job_name: inventory-service
+
+        static_configs:
+
+          - targets: ['inventory-service.northbridge.svc.cluster.local:8002']
+
+      - job_name: notifications-service
+
+        static_configs:
+
+          - targets: ['notifications-service.northbridge.svc.cluster.local:4002']
+
+      - job_name: analytics-service
+
+        static_configs:
+
+          - targets: ['analytics-service.northbridge.svc.cluster.local:8003']
+
+alertmanager:
+
+  alertmanagerSpec:
+
+    storage:
+
+      volumeClaimTemplate:
+
+        spec:
+
+          storageClassName: ebs-sc
+
+          resources:
+
+            requests:
+
+              storage: 1Gi
+
+prometheus:
+
+  prometheusSpec:
+
+    storageSpec:
+
+      volumeClaimTemplate:
+
+        spec:
+
+          storageClassName: ebs-sc
+
+          resources:
+
+            requests:
+
+              storage: 10Gi
+
